@@ -4,7 +4,7 @@ from torchvision import models, transforms
 
 import time
 import os
-import skvideo.io
+
 import random
 import numpy as np
 import torch.nn.functional as F
@@ -45,20 +45,21 @@ def transform(sample,T):
     transforms.Normalize((0.5, ), (0.5, )),
     ])
     
-    video = torch.Tensor(trim(video,T))
+    video,s,e=trim(video,T)
+    video = torch.Tensor(video)
     
     for i in range(T):
         img = video[:,i]
         img = trans(img)
         img=img.reshape(n_channels,image_size1,image_size2)
         trans_video[:,i] = img
-    sample = {'video': trans_video, 'labels': label[:T],'paths':paths,'frames':frames}
+    sample = {'video': trans_video, 'labels': label[s:e],'paths':paths,'frames':frames}
     return sample
 
 def trim(video,T):
     start = np.random.randint(0, video.shape[1] - (T+1))
     end = start + T
-    return video[:, start:end, :, :]
+    return video[:, start:end, :, :],start,end
 
 def feature_extraction(vgg16,src):
     new_src=[]

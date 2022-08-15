@@ -4,7 +4,7 @@ from torchvision import models, transforms
 
 import time
 import os
-import skvideo.io
+
 import random
 import numpy as np
 import torch.nn.functional as F
@@ -28,13 +28,14 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
 
 class SceneClassification_Model(nn.Module):
-    def __init__(self,inp_dim,out_dim=2):
+    def __init__(self,inp_dim,dim,out_dim=2):
         super().__init__()
-        encoder_layer = nn.TransformerEncoderLayer(d_model=1000, nhead=8)
+        self.emb=torch.nn.Linear(inp_dim,dim)
+        encoder_layer = nn.TransformerEncoderLayer(d_model=dim, nhead=8)
         self.transformer_en_model= nn.TransformerEncoder(encoder_layer, num_layers=6)
-        self.out_dim=out_dim
-        self.fc=torch.nn.Linear(inp_dim,out_dim)
+        self.fc=torch.nn.Linear(dim,out_dim)
     def forward(self,x):
+        x=self.emb(x)
         x=self.transformer_en_model(x)
         x=self.fc(x)
         return x

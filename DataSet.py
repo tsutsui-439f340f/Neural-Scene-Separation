@@ -1,6 +1,11 @@
 import torch
 import os
-import skvideo.io
+
+#import skvideo
+#ffmpeg_path = "ffmpeg-master-latest-win64-gpl-shared/ffmpeg-master-latest-win64-gpl-shared/bin/"
+#skvideo.setFFmpegPath(ffmpeg_path)
+
+#import skvideo.io
 import numpy as np
 import torch.nn.functional as F
 from torchvision import datasets, transforms
@@ -15,7 +20,6 @@ import numpy as np
 from scipy import spatial
 import seaborn as sns
 import os
-import yt_dlp
 import shutil
 import matplotlib.pyplot as plt
 import sys
@@ -45,7 +49,15 @@ class BatchDataset(torch.utils.data.Dataset):
         total_len=0
         
         for path in paths:
-            video=skvideo.io.vread(path)
+            #video=skvideo.io.vread(path)
+            cap= cv2.VideoCapture(path)
+            video=[]
+            for _ in range(int(cap.get(cv2.CAP_PROP_FRAME_COUNT))):
+                ret, frame = cap.read()
+                if ret :
+                    frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    video.append(frame)
+            video=np.array(video)
             keyframe.extend([keyframe[-1]+video.shape[0]])
             total_len+=video.shape[0]
             frames.append(video.shape[0])
@@ -55,7 +67,7 @@ class BatchDataset(torch.utils.data.Dataset):
         keyframe=keyframe[:-1]
         label = torch.zeros(total_len)
         label[keyframe] =1
-        
+        label[0]=0
         sample = {'video': videos, 'labels': label,'paths':paths,'frames':frames}
 
         if self.transform:
