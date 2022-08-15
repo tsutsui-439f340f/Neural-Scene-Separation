@@ -1,36 +1,23 @@
-import torch
-import torch.nn as nn
-from torchvision import models, transforms
 from utils import transform,feature_extraction,trim
-
 import time
 import os
-
 import random
 import numpy as np
-import torch.nn.functional as F
-from torchvision import datasets, transforms
+from torchvision import datasets, transforms,models
 from DataSet import BatchDataset
 import torch
 import torch.nn  as nn
+import torch.nn.functional as F
 from tqdm import tqdm
 import cv2
 from model import SceneClassification_Model
 from PIL import Image, ImageDraw, ImageFont
 import matplotlib.pyplot as plt
-from scipy import spatial
-import seaborn as sns
 import shutil
 import sys
 import math
-import pandas as pd
-from sklearn.metrics import confusion_matrix
-import seaborn as sns
-from sklearn.metrics import classification_report
-from sklearn.metrics import accuracy_score
+
 torch.backends.cudnn.benchmark=True
-
-
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 epochs=10
@@ -110,9 +97,9 @@ def train(dataloaders,model):
                     preds=predicted.detach().to("cpu").tolist()
                     _,info=metrics(true,preds)
                     epoch_correct += info
-                    #print(epoch_correct)
+                   
             epoch_loss=epoch_loss/len(dataloaders[phase].dataset)
-            epoch_acc=epoch_correct#/len(dataloaders[phase].dataset)
+            epoch_acc=epoch_correct
             
             if phase=="train":
                 torch.save(model.state_dict(), model_path)
@@ -220,15 +207,14 @@ if __name__ == "__main__":
 
     lr=1e-5
 
-    #weights = torch.tensor([1.0, 100.0]).cuda()
-    #criterion= nn.CrossEntropyLoss(weight=weights).to(device)
-    criterion= nn.CrossEntropyLoss().to(device)
-
+    weights = torch.tensor([1.0, 100.0]).cuda()
+    criterion= nn.CrossEntropyLoss(weight=weights).to(device)
+    
     optimizer=torch.optim.Adam(model.parameters(), lr=lr)
     dataloaders=dict({"train":train_loader,"valid":valid_loader})
 
     train_loss,val_loss,train_acc,val_acc=train(dataloaders,model)
-    #モデル保存
+   
    
     
 
